@@ -1,17 +1,5 @@
 const puppeteer = require('puppeteer');
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
-// CSV writer setup cho file tivi_data.csv
-const csvWriter = createCsvWriter({
-    path: 'tivi_data_dienmayxanh.csv',
-    header: [
-        { id: 'name', title: 'Name' },
-        { id: 'price', title: 'Price' },
-        { id: 'oldPrice', title: 'Old Price' },
-        { id: 'discountPercent', title: 'Discount Percent' },
-        { id: 'link', title: 'Product Link' }
-    ]
-});
+const ExcelJS = require('exceljs');
 
 async function fetchTiviData() {
     const browser = await puppeteer.launch({
@@ -62,14 +50,36 @@ async function fetchTiviData() {
     return tiviData;
 }
 
+async function saveToExcel(tiviData) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Tivi Data');
+
+    // Đặt tiêu đề cột
+    worksheet.columns = [
+        { header: 'Name', key: 'name', width: 30 },
+        { header: 'Price', key: 'price', width: 15 },
+        { header: 'Old Price', key: 'oldPrice', width: 15 },
+        { header: 'Discount Percent', key: 'discountPercent', width: 15 },
+        { header: 'Product Link', key: 'link', width: 50 }
+    ];
+
+    // Thêm dữ liệu vào worksheet
+    tiviData.forEach(item => {
+        worksheet.addRow(item);
+    });
+
+    // Ghi file Excel
+    await workbook.xlsx.writeFile('tivi_data_dienmayxanh.xlsx');
+    console.log('The Excel file was written successfully');
+}
+
 async function crawlTiviData() {
     console.log('Fetching data...');
 
     const tiviData = await fetchTiviData();
 
     if (tiviData.length > 0) {
-        await csvWriter.writeRecords(tiviData);
-        console.log('The CSV file was written successfully');
+        await saveToExcel(tiviData);
     } else {
         console.log('No data found.');
     }
