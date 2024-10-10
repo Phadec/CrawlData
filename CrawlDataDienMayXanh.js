@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const ExcelJS = require('exceljs');
 
+// Function to fetch product data from the main page
 async function fetchTiviData() {
     const browser = await puppeteer.launch({
         headless: true,
@@ -95,7 +96,27 @@ async function fetchProductDetails(browser, productLink) {
 
         // Extract additional technical details
         const details = await page.evaluate(() => {
-            const technicalDetails = {};
+            const technicalDetails = {
+                'Công nghệ hình ảnh': '',
+                'Bộ xử lý': '',
+                'Tần số quét thực': '',
+                'Tổng công suất loa': '',
+                'Kết nối Internet': '',
+                'Kết nối không dây': '',
+                'USB': '',
+                'Cổng nhận hình ảnh, âm thanh': '',
+                'Cổng xuất âm thanh': '',
+                'Kích thước có chân, đặt bàn': '',
+                'Khối lượng có chân': '',
+                'Kích thước không chân, treo tường': '',
+                'Khối lượng không chân': '',
+                'Chất liệu chân đế': '',
+                'Chất liệu viền tivi':'',
+                'Hãng': '',
+                'Nơi sản xuất': '',
+                'Năm ra mắt': ''
+            };
+
             const items = document.querySelectorAll('.text-specifi li');
 
             items.forEach((item) => {
@@ -103,9 +124,14 @@ async function fetchProductDetails(browser, productLink) {
                 const valueElement = item.querySelector('aside span') || item.querySelector('aside a');
 
                 const key = keyElement ? keyElement.textContent.trim().replace(':', '') : null;
-                const value = valueElement ? valueElement.textContent.trim() : null;
+                let value = valueElement ? valueElement.textContent.trim() : null;
 
-                if (key && value) {
+                // Nếu key là 'Hãng' và value có chứa 'Xem thông tin hãng', loại bỏ phần này
+                if (key === 'Hãng' && value) {
+                    value = value.replace(/\.?\s*Xem thông tin hãng\s*$/, '').trim();
+                }
+
+                if (key && value && technicalDetails.hasOwnProperty(key)) {
                     technicalDetails[key] = value;
                 }
             });
@@ -122,6 +148,7 @@ async function fetchProductDetails(browser, productLink) {
     }
 }
 
+// Save data to Excel
 async function saveToExcel(tiviData) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('TV Data');
@@ -129,25 +156,58 @@ async function saveToExcel(tiviData) {
     // Set column headers
     worksheet.columns = [
         { header: 'Name', key: 'name', width: 50 },
-        { header: 'Price', key: 'price', width: 50 },
-        { header: 'Old Price', key: 'oldPrice', width: 50 },
-        { header: 'Discount Percent', key: 'discountPercent', width: 50 },
+        { header: 'Price', key: 'price', width: 15 },
+        { header: 'Old Price', key: 'oldPrice', width: 15 },
+        { header: 'Discount Percent', key: 'discountPercent', width: 20 },
         { header: 'Product Link', key: 'link', width: 50 },
-        { header: 'TV Type', key: 'Loại Tivi', width: 50 },
-        { header: 'Screen Size', key: 'Kích cỡ màn hình', width: 50 },
-        { header: 'Resolution', key: 'Độ phân giải', width: 50 },
-        { header: 'Screen Type', key: 'Loại màn hình', width: 50 },
-        { header: 'Operating System', key: 'Hệ điều hành', width: 50 },
-        { header: 'Stand Material', key: 'Chất liệu chân đế', width: 50 },
-        { header: 'Frame Material', key: 'Chất liệu viền tivi', width: 50 },
-        { header: 'Manufactured In', key: 'Nơi sản xuất', width: 50 },
-        { header: 'Release Year', key: 'Năm ra mắt', width: 50 }
+        { header: 'Image Technology', key: 'Công nghệ hình ảnh', width: 30 },
+        { header: 'Processor', key: 'Bộ xử lý', width: 20 },
+        { header: 'Refresh Rate', key: 'Tần số quét thực', width: 15 },
+        { header: 'Speaker Power', key: 'Tổng công suất loa', width: 20 },
+        { header: 'Internet Connection', key: 'Kết nối Internet', width: 20 },
+        { header: 'Wireless Connectivity', key: 'Kết nối không dây', width: 20 },
+        { header: 'USB Ports', key: 'USB', width: 20 },
+        { header: 'Video/Audio Input Ports', key: 'Cổng nhận hình ảnh, âm thanh', width: 30 },
+        { header: 'Audio Output Ports', key: 'Cổng xuất âm thanh', width: 30 },
+        { header: 'Dimensions with Stand', key: 'Kích thước có chân, đặt bàn', width: 30 },
+        { header: 'Weight with Stand', key: 'Khối lượng có chân', width: 20 },
+        { header: 'Dimensions without Stand', key: 'Kích thước không chân, treo tường', width: 30 },
+        { header: 'Weight without Stand', key: 'Khối lượng không chân', width: 20 },
+        { header: 'Manufacturer', key: 'Hãng', width: 20 },
+        { header: 'Stand Material', key: 'Chất liệu chân đế', width: 20 },
+        { header: 'Frame Material', key: 'Chất liệu viền tivi', width: 20 },
+        { header: 'Manufactured In', key: 'Nơi sản xuất', width: 20 },
+        { header: 'Release Year', key: 'Năm ra mắt', width: 20 }
     ];
 
     console.log('Adding products to the Excel sheet...');
     tiviData.forEach((item, index) => {
         console.log(`Adding product ${index + 1} to the Excel sheet: ${item.name}`);
-        worksheet.addRow(item);
+        worksheet.addRow({
+            name: item.name,
+            price: item.price,
+            oldPrice: item.oldPrice,
+            discountPercent: item.discountPercent,
+            link: item.link,
+            'Công nghệ hình ảnh': item['Công nghệ hình ảnh'] || '',
+            'Bộ xử lý': item['Bộ xử lý'] || '',
+            'Tần số quét thực': item['Tần số quét thực'] || '',
+            'Tổng công suất loa': item['Tổng công suất loa'] || '',
+            'Kết nối Internet': item['Kết nối Internet'] || '',
+            'Kết nối không dây': item['Kết nối không dây'] || '',
+            'USB': item['USB'] || '',
+            'Cổng nhận hình ảnh, âm thanh': item['Cổng nhận hình ảnh, âm thanh'] || '',
+            'Cổng xuất âm thanh': item['Cổng xuất âm thanh'] || '',
+            'Kích thước có chân, đặt bàn': item['Kích thước có chân, đặt bàn'] || '',
+            'Khối lượng có chân': item['Khối lượng có chân'] || '',
+            'Kích thước không chân, treo tường': item['Kích thước không chân, treo tường'] || '',
+            'Khối lượng không chân': item['Khối lượng không chân'] || '',
+            'Hãng': item['Hãng'] || '',
+            'Chất liệu chân đế': item['Chất liệu chân đế'] || '',
+            'Chất liệu viền tivi': item['Chất liệu viền tivi'] || '',
+            'Nơi sản xuất': item['Nơi sản xuất'] || '',
+            'Năm ra mắt': item['Năm ra mắt'] || ''
+        });
     });
 
     const fileName = 'tivi_data_dienmayxanh.xlsx';
