@@ -1,1 +1,1 @@
-CrawData from https://www.dienmayxanh.com/tivi#c=1942&o=13&pi=11 and https://cellphones.com.vn/tivi.html
+CrawData from https://www.dienmayxanh.com/tivi and https://cellphones.com.vn/tivi.html
