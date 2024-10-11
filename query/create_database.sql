@@ -1,0 +1,1 @@
+CREATE DATABASE tv_data_warehouse; 

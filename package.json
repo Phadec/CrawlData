@@ -5,8 +5,13 @@
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "exceljs": "^4.4.0",
+    "fs": "^0.0.1-security",
+    "mssql": "^11.0.1",
+    "mysql2": "^3.11.3",
+    "pg": "^8.13.0",
     "puppeteer": "^23.5.1",
     "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "xlsx": "^0.18.5"
   }
 }
