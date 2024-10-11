@@ -4,6 +4,7 @@
     "cheerio": "^1.0.0",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
+    "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
     "fs": "^0.0.1-security",
     "mssql": "^11.0.1",

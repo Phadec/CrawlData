@@ -1,5 +1,6 @@
 const xlsx = require('xlsx');
 const mysql = require('mysql2/promise');
+require('dotenv').config(); // Load environment variables
 
 // File paths
 const filePaths = [
@@ -9,16 +10,42 @@ const filePaths = [
 
 // MySQL connection configuration
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'Pha9124719@',
-    database: 'tv_data_warehouse',
-    port: 3306
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME
 };
+
+// Get table name from environment variables
+const tableName = process.env.DB_TABLE_NAME;
+
+// Create database if it doesn't exist
+async function createDatabaseIfNotExists() {
+    try {
+        const connection = await mysql.createConnection({
+            host: dbConfig.host,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            port: dbConfig.port
+        });
+
+        const dbName = dbConfig.database;
+        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+        console.log(`Database '${dbName}' created or already exists.`);
+
+        await connection.end();
+    } catch (error) {
+        console.error('Error creating database:', error);
+        process.exit(1);
+    }
+}
 
 // Connect to MySQL
 async function connectToDatabase() {
     try {
+        await createDatabaseIfNotExists();
+
         const connection = await mysql.createConnection(dbConfig);
         console.log('Connected to MySQL database.');
         return connection;
@@ -30,15 +57,20 @@ async function connectToDatabase() {
 
 // Read data from Excel file
 function extractData(filePath) {
-    const workbook = xlsx.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(worksheet);
-    console.log(`Columns in ${filePath}:`, Object.keys(data[0])); // Log column names for verification
-    return data;
+    try {
+        const workbook = xlsx.readFile(filePath);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(worksheet);
+        console.log(`Columns in ${filePath}:`, Object.keys(data[0])); // Log column names for verification
+        return data;
+    } catch (error) {
+        console.error(`Error reading data from file ${filePath}:`, error);
+        return [];
+    }
 }
 
-// Function to clean price values
+// Data cleaning and transformation functions
 function cleanPrice(priceStr) {
     if (typeof priceStr === 'string') {
         const cleaned = priceStr.replace(/[^\d]/g, '');
@@ -47,7 +79,6 @@ function cleanPrice(priceStr) {
     return priceStr ? parseInt(priceStr, 10) : null;
 }
 
-// Function to clean discount percentage values
 function cleanDiscount(discountStr) {
     if (typeof discountStr === 'string') {
         const match = discountStr.match(/\d+/);
@@ -56,17 +87,14 @@ function cleanDiscount(discountStr) {
     return discountStr ? -parseInt(discountStr, 10) : null;
 }
 
-// General function to trim and clean string values
 function cleanString(value) {
     return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
 }
 
-// Function to clean numeric fields like release year
 function cleanNumber(value) {
     return value ? parseInt(value, 10) : null;
 }
 
-// Transform and clean the data
 function transformData(data) {
     return data.map((item) => {
         const transformedItem = {
@@ -93,7 +121,6 @@ function transformData(data) {
             releaseYear: cleanNumber(item['releaseYear'])
         };
 
-        // Check if all values are null, indicating a potential mismatch
         if (Object.values(transformedItem).every(value => value === null)) {
             console.warn('All values are null for this item. Please check the column names.');
         }
@@ -104,15 +131,12 @@ function transformData(data) {
 // Load the data into MySQL
 async function loadDataToDatabase(connection, data) {
     try {
-        const tableName = 'tivi_data';
-
-        // Create table if it doesn't exist
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS ${tableName} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255),
-                price BIGINT,  -- Changed to BIGINT
-                old_price BIGINT,  -- Changed to BIGINT
+                price BIGINT,
+                old_price BIGINT,
                 discount_percent INT,
                 product_link TEXT,
                 screen_size VARCHAR(255),
@@ -134,9 +158,8 @@ async function loadDataToDatabase(connection, data) {
             );
         `;
         await connection.query(createTableQuery);
-        console.log('Table created or already exists.');
+        console.log(`Table '${tableName}' created or already exists.`);
 
-        // Insert data into the table
         const insertQuery = `
             INSERT INTO ${tableName} (
                 name, price, old_price, discount_percent, product_link, screen_size, resolution, screen_type,
@@ -147,8 +170,7 @@ async function loadDataToDatabase(connection, data) {
         `;
 
         for (const item of data) {
-            if (Object.values(item).some(value => value !== null)) { // Only insert if there is at least one non-null value
-                console.log("Inserting item:", item); // Log the item before insertion
+            if (Object.values(item).some(value => value !== null)) {
                 await connection.query(insertQuery, [
                     item.name, item.price, item.oldPrice, item.discountPercent, item.productLink, item.screenSize,
                     item.resolution, item.screenType, item.operatingSystem, item.imageTechnology, item.processor,
@@ -173,15 +195,16 @@ async function etlProcess() {
         for (const filePath of filePaths) {
             console.log(`Processing file: ${filePath}`);
             const extractedData = extractData(filePath);
-            console.log(`Extracted Data Sample: ${JSON.stringify(extractedData[0])}`); // Log a sample of extracted data
+            if (extractedData.length === 0) {
+                console.warn(`No data found in file: ${filePath}`);
+                continue;
+            }
             const transformedData = transformData(extractedData);
-            console.log(`Transformed Data Sample: ${JSON.stringify(transformedData[0])}`); // Log a sample of transformed data
             await loadDataToDatabase(connection, transformedData);
         }
     } catch (error) {
         console.error('Error in ETL process:', error);
     } finally {
-        // Close the connection after all files are processed
         await connection.end();
         console.log('MySQL connection closed.');
     }
