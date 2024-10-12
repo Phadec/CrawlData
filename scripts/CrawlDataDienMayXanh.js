@@ -67,18 +67,45 @@ async function fetchTiviData() {
 
         console.log(`Found ${tiviData.length} products. Fetching detailed information for each product...`);
 
-        // Limit the number of products to 10
-        // tiviData = tiviData.slice(0, 10);
+        // Call fetchProductDetails with two puppeteer browsers at a time
+        const browser1 = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
 
-        // Loop through each product and fetch detailed information
-        for (let i = 0; i < tiviData.length; i++) {
-            const product = tiviData[i];
-            console.log(`Processing product ${i + 1}/${tiviData.length}: ${product.name}`);
-            if (product.link) {
-                const details = await fetchProductDetails(browser, product.link);
-                tiviData[i] = { ...product, ...details };
+        const browser2 = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        // Pages for browsers
+        const page1 = await browser1.newPage();
+        const page2 = await browser2.newPage();
+
+        for (let i = 0; i < tiviData.length; i += 2) {
+            const product1 = tiviData[i];
+            const product2 = tiviData[i + 1];
+
+            console.log(`Processing product ${i + 1}/${tiviData.length}: ${product1.name}`);
+            if (product2) {
+                console.log(`Processing product ${i + 2}/${tiviData.length}: ${product2.name}`);
+            }
+
+            const details1 = product1.link ? fetchProductDetails(page1, product1.link) : Promise.resolve({});
+            const details2 = product2 && product2.link ? fetchProductDetails(page2, product2.link) : Promise.resolve({});
+
+            const details = await Promise.all([details1, details2]);
+
+            tiviData[i] = { ...product1, ...details[0] };
+            if (product2) {
+                tiviData[i + 1] = { ...product2, ...details[1] };
             }
         }
+
+        await page1.close();
+        await page2.close();
+        await browser1.close();
+        await browser2.close();
 
         await page.close();
         await browser.close();
@@ -91,9 +118,12 @@ async function fetchTiviData() {
     }
 }
 
-
 // Function to fetch additional details from a product's page
-async function fetchProductDetails(browser, productLink) {
+async function fetchProductDetails(productLink) {
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }); // Open new browser instance
     const page = await browser.newPage();
     try {
         console.log(`Navigating to product page: ${productLink}`);
@@ -115,30 +145,20 @@ async function fetchProductDetails(browser, productLink) {
                 'USB': '',
                 'Cổng nhận hình ảnh, âm thanh': '',
                 'Cổng xuất âm thanh': '',
-                'Kích thước có chân, đặt bàn': '',
-                'Khối lượng có chân': '',
-                'Kích thước không chân, treo tường': '',
-                'Khối lượng không chân': '',
-                'Chất liệu chân đế': '', // New field
-                'Chất liệu viền tivi': '', // New field
+                'Chất liệu chân đế': '',
+                'Chất liệu viền tivi': '',
                 'Hãng': '',
                 'Nơi sản xuất': '',
                 'Năm ra mắt': ''
             };
 
             const items = document.querySelectorAll('.text-specifi li');
-
             items.forEach((item) => {
                 const keyElement = item.querySelector('aside strong');
                 const valueElement = item.querySelector('aside span') || item.querySelector('aside a');
 
                 const key = keyElement ? keyElement.textContent.trim().replace(':', '') : null;
                 let value = valueElement ? valueElement.textContent.trim() : null;
-
-                // If the key is 'Hãng' and the value contains 'Xem thông tin hãng', remove that part
-                if (key === 'Hãng' && value) {
-                    value = value.replace(/\.?\s*Xem thông tin hãng\s*$/, '').trim();
-                }
 
                 if (key && value && technicalDetails.hasOwnProperty(key)) {
                     technicalDetails[key] = value;
@@ -149,14 +169,15 @@ async function fetchProductDetails(browser, productLink) {
         });
 
         await page.close();
+        await browser.close(); // Close browser instance after details are fetched
         return details;
     } catch (error) {
         console.error(`Failed to load product page ${productLink}:`, error);
         await page.close();
+        await browser.close(); // Ensure browser is closed
         return {};
     }
 }
-
 
 // Save data to Excel
 async function saveToExcel(tiviData) {

@@ -4,12 +4,11 @@ const ExcelJS = require('exceljs');
 // Function to fetch product data from the main page
 async function fetchTiviData() {
     const browser = await puppeteer.launch({
-        headless: true, // Set to false for debugging purposes
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
 
-    // Intercept requests to block unnecessary resources like images, stylesheets, etc.
     await page.setRequestInterception(true);
     page.on('request', (req) => {
         if (['image', 'stylesheet', 'font'].includes(req.resourceType())) {
@@ -50,7 +49,7 @@ async function fetchTiviData() {
             const products = document.querySelectorAll('.product-info-container');
 
             products.forEach((product, index) => {
-                const dataId = product.getAttribute('data-id') ? product.getAttribute('data-id').trim() : 'No data_id'; // Extract data-id
+                const dataId = product.getAttribute('data-id') ? product.getAttribute('data-id').trim() : 'No data_id';
                 const name = product.querySelector('.product__name h3') ? product.querySelector('.product__name h3').textContent.trim() : 'No name available';
                 const price = product.querySelector('.product__price--show') ? product.querySelector('.product__price--show').textContent.trim() : 'No price available';
                 const oldPrice = product.querySelector('.product__price--through') ? product.querySelector('.product__price--through').textContent.trim() : 'No old price';
@@ -66,16 +65,19 @@ async function fetchTiviData() {
 
         console.log(`Extracted ${tiviData.length} products successfully.`);
 
-        // Remove or comment out this line to avoid limiting the product list
-        // tiviData = tiviData.slice(0, 10);
-
         console.log(`Fetching additional details for ${tiviData.length} products...`);
 
-        // Fetch additional product details for the products
-        for (let i = 0; i < tiviData.length; i++) {
-            console.log(`Fetching details for product ${i + 1}/${tiviData.length}: ${tiviData[i].name}`);
-            const details = await fetchProductDetails(browser, tiviData[i].link);
-            tiviData[i] = { ...tiviData[i], ...details };
+        // Parallel processing of product detail pages (max 2 at a time)
+        const chunkSize = 2;
+        for (let i = 0; i < tiviData.length; i += chunkSize) {
+            const chunk = tiviData.slice(i, i + chunkSize);
+
+            // Process 3 product pages in parallel
+            await Promise.all(chunk.map(async (product, index) => {
+                console.log(`Fetching details for product ${i + index + 1}: ${product.name}`);
+                const details = await fetchProductDetails(browser, product.link);
+                tiviData[i + index] = { ...product, ...details };
+            }));
         }
 
         await page.close();
@@ -227,6 +229,7 @@ async function fetchProductDetails(browser, productLink) {
         return {};
     }
 }
+
 
 
 // Function to auto-scroll down the page
