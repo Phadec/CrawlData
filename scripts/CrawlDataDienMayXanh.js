@@ -68,7 +68,7 @@ async function fetchTiviData() {
         console.log(`Found ${tiviData.length} products. Fetching detailed information for each product...`);
 
         // Limit the number of products to 10
-        tiviData = tiviData.slice(0, 10);
+        // tiviData = tiviData.slice(0, 10);
 
         // Loop through each product and fetch detailed information
         for (let i = 0; i < tiviData.length; i++) {

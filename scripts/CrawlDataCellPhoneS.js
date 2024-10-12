@@ -50,6 +50,7 @@ async function fetchTiviData() {
             const products = document.querySelectorAll('.product-info-container');
 
             products.forEach((product, index) => {
+                const dataId = product.getAttribute('data-id') ? product.getAttribute('data-id').trim() : 'No data_id'; // Extract data-id
                 const name = product.querySelector('.product__name h3') ? product.querySelector('.product__name h3').textContent.trim() : 'No name available';
                 const price = product.querySelector('.product__price--show') ? product.querySelector('.product__price--show').textContent.trim() : 'No price available';
                 const oldPrice = product.querySelector('.product__price--through') ? product.querySelector('.product__price--through').textContent.trim() : 'No old price';
@@ -57,7 +58,7 @@ async function fetchTiviData() {
                 const link = product.querySelector('.product__link') ? product.querySelector('.product__link').href : 'No link available';
 
                 console.log(`Extracted product ${index + 1}: ${name}`);
-                data.push({ name, price, oldPrice, discountPercent, link });
+                data.push({ dataId, name, price, oldPrice, discountPercent, link });
             });
 
             return data;
@@ -66,7 +67,7 @@ async function fetchTiviData() {
         console.log(`Extracted ${tiviData.length} products successfully.`);
 
         // Remove or comment out this line to avoid limiting the product list
-        tiviData = tiviData.slice(0, 10);
+        // tiviData = tiviData.slice(0, 10);
 
         console.log(`Fetching additional details for ${tiviData.length} products...`);
 
@@ -259,6 +260,7 @@ async function saveTiviData() {
 
         // Set column headers
         worksheet.columns = [
+            { header: 'Data ID', key: 'dataId', width: 15 }, // New column for dataId
             { header: 'Name', key: 'name', width: 50 },
             { header: 'Price', key: 'price', width: 15 },
             { header: 'Old Price', key: 'oldPrice', width: 15 },
@@ -299,7 +301,6 @@ async function saveTiviData() {
         console.log('No data found to write.');
     }
 }
-
 
 // Start the main product fetching process
 saveTiviData();

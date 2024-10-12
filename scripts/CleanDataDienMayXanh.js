@@ -2,8 +2,8 @@ const xlsx = require('xlsx');
 const fs = require('fs');
 
 // File paths
-const inputFilePath = './data/tivi_data_dienmayxanh.xlsx'; // Đường dẫn mới cho file Excel sau khi đã di chuyển vào thư mục 'data'
-const outputFilePath = './data/cleaned_tivi_data_dienmayxanh.xlsx'; // Đường dẫn mới cho file đã clean
+const inputFilePath = './data/tivi_data_dienmayxanh.xlsx'; // Input Excel file path
+const outputFilePath = './data/cleaned_tivi_data_dienmayxanh.xlsx'; // Output cleaned Excel file path
 
 // Read the Excel file
 const workbook = xlsx.readFile(inputFilePath);
@@ -46,6 +46,7 @@ function cleanNumber(value) {
 // Clean the data
 data = data.map((item) => {
     return {
+        dataId: cleanString(item['Data ID']), // Clean Data ID
         name: cleanString(item['Name']),
         price: cleanPrice(item['Price']),
         oldPrice: cleanPrice(item['Old Price']),
@@ -64,6 +65,8 @@ data = data.map((item) => {
         usbPorts: cleanString(item['USB Ports']),
         videoAudioInputPorts: cleanString(item['Video/Audio Input Ports']),
         audioOutputPorts: cleanString(item['Audio Output Ports']),
+        standMaterial: cleanString(item['Stand Material']), // Clean Stand Material
+        bezelMaterial: cleanString(item['Bezel Material']), // Clean Bezel Material
         manufacturer: cleanString(item['Manufacturer']),
         manufacturedIn: cleanString(item['Manufactured In']),
         releaseYear: cleanNumber(item['Release Year'])

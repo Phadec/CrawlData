@@ -2,8 +2,8 @@ const xlsx = require('xlsx');
 const fs = require('fs');
 
 // File paths
-const inputFilePath = './data/tivi_data_cellphones.xlsx'; // File generated after scraping
-const outputFilePath = './data/cleaned_tivi_data_cellphones.xlsx'; // New file with cleaned data
+const inputFilePath = './data/tivi_data_cellphones.xlsx'; // Input file path
+const outputFilePath = './data/cleaned_tivi_data_cellphones.xlsx'; // Output file path for cleaned data
 
 // Read the Excel file
 const workbook = xlsx.readFile(inputFilePath);
@@ -16,7 +16,7 @@ let data = xlsx.utils.sheet_to_json(worksheet);
 // Function to clean price values
 function cleanPrice(priceStr) {
     if (typeof priceStr === 'string') {
-        // Remove all non-numeric characters
+        // Remove all non-numeric characters (e.g., '11.990.000đ' -> '11990000')
         const cleaned = priceStr.replace(/[^\d]/g, '');
         return cleaned ? parseInt(cleaned, 10) : null;
     }
@@ -26,7 +26,7 @@ function cleanPrice(priceStr) {
 // Function to clean discount percentage values
 function cleanDiscount(discountStr) {
     if (typeof discountStr === 'string') {
-        // Find the first number in the string (e.g., "giảm 20%" -> -20)
+        // Extract numeric value from discount percentage (e.g., 'Giảm 20%' -> -20)
         const match = discountStr.match(/\d+/);
         return match ? -parseInt(match[0], 10) : null;
     }
@@ -46,14 +46,16 @@ function cleanNumber(value) {
 // Clean the data
 data = data.map((item) => {
     return {
+        dataId: cleanString(item['Data ID']), // Clean 'Data ID'
         name: cleanString(item.Name),
         price: cleanPrice(item.Price),
         oldPrice: cleanPrice(item['Old Price']),
         discountPercent: cleanDiscount(item['Discount Percent']),
         productLink: cleanString(item['Product Link']),
         screenSize: cleanString(item['Screen Size']),
-        resolution: cleanString(item['Resolution']),
+        resolution: cleanString(item.Resolution),
         screenType: cleanString(item['Screen Type']),
+        tvType: cleanString(item['TV Type']),
         operatingSystem: cleanString(item['Operating System']),
         imageTechnology: cleanString(item['Image Technology']),
         processor: cleanString(item['Processor']),
@@ -64,6 +66,8 @@ data = data.map((item) => {
         usbPorts: cleanString(item['USB Ports']),
         videoAudioInputPorts: cleanString(item['Video/Audio Input Ports']),
         audioOutputPorts: cleanString(item['Audio Output Ports']),
+        standMaterial: cleanString(item['Stand Material']),
+        bezelMaterial: cleanString(item['Bezel Material']),
         manufacturer: cleanString(item.Manufacturer),
         manufacturedIn: cleanString(item['Manufactured In']),
         releaseYear: cleanNumber(item['Release Year'])
