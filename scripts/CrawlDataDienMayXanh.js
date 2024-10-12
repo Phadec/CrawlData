@@ -47,24 +47,28 @@ async function fetchTiviData() {
         }
 
         console.log('Extracting product data...');
-        const tiviData = await page.evaluate(() => {
+        let tiviData = await page.evaluate(() => {
             const data = [];
             const products = document.querySelectorAll('.listproduct .item');
 
             products.forEach((product) => {
+                const dataId = product.getAttribute('data-id') ? product.getAttribute('data-id').trim() : ''; // Fetch data-id
                 const name = product.querySelector('h3') ? product.querySelector('h3').textContent.trim().replace(/\s\s+/g, ' ') : '';
                 const price = product.querySelector('.price') ? product.querySelector('.price').textContent.trim() : '';
                 const oldPrice = product.querySelector('.price-old') ? product.querySelector('.price-old').textContent.trim() : '';
                 const discountPercent = product.querySelector('.percent') ? product.querySelector('.percent').textContent.trim() : '';
                 const link = product.querySelector('a') ? product.querySelector('a').href : '';
 
-                data.push({ name, price, oldPrice, discountPercent, link });
+                data.push({ dataId, name, price, oldPrice, discountPercent, link });
             });
 
             return data;
         });
 
         console.log(`Found ${tiviData.length} products. Fetching detailed information for each product...`);
+
+        // Limit the number of products to 10
+        tiviData = tiviData.slice(0, 10);
 
         // Loop through each product and fetch detailed information
         for (let i = 0; i < tiviData.length; i++) {
@@ -86,6 +90,7 @@ async function fetchTiviData() {
         return [];
     }
 }
+
 
 // Function to fetch additional details from a product's page
 async function fetchProductDetails(browser, productLink) {
@@ -114,8 +119,8 @@ async function fetchProductDetails(browser, productLink) {
                 'Khối lượng có chân': '',
                 'Kích thước không chân, treo tường': '',
                 'Khối lượng không chân': '',
-                'Chất liệu chân đế': '',
-                'Chất liệu viền tivi': '',
+                'Chất liệu chân đế': '', // New field
+                'Chất liệu viền tivi': '', // New field
                 'Hãng': '',
                 'Nơi sản xuất': '',
                 'Năm ra mắt': ''
@@ -152,13 +157,15 @@ async function fetchProductDetails(browser, productLink) {
     }
 }
 
+
 // Save data to Excel
 async function saveToExcel(tiviData) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('TV Data');
 
-    // Set column headers
+    // Set column headers, with data-id before name
     worksheet.columns = [
+        { header: 'Data ID', key: 'dataId', width: 15 }, // New column for data-id
         { header: 'Name', key: 'name', width: 50 },
         { header: 'Price', key: 'price', width: 15 },
         { header: 'Old Price', key: 'oldPrice', width: 15 },
@@ -177,6 +184,8 @@ async function saveToExcel(tiviData) {
         { header: 'USB Ports', key: 'USB', width: 20 },
         { header: 'Video/Audio Input Ports', key: 'Cổng nhận hình ảnh, âm thanh', width: 30 },
         { header: 'Audio Output Ports', key: 'Cổng xuất âm thanh', width: 30 },
+        { header: 'Stand Material', key: 'Chất liệu chân đế', width: 20 },
+        { header: 'Bezel Material', key: 'Chất liệu viền tivi', width: 20 },
         { header: 'Manufacturer', key: 'Hãng', width: 20 },
         { header: 'Manufactured In', key: 'Nơi sản xuất', width: 20 },
         { header: 'Release Year', key: 'Năm ra mắt', width: 20 }
@@ -186,6 +195,7 @@ async function saveToExcel(tiviData) {
     tiviData.forEach((item, index) => {
         console.log(`Adding product ${index + 1} to the Excel sheet: ${item.name}`);
         worksheet.addRow({
+            dataId: item.dataId, // Include the new dataId field
             name: item.name,
             price: item.price,
             oldPrice: item.oldPrice,
@@ -204,9 +214,9 @@ async function saveToExcel(tiviData) {
             'USB': item['USB'] || '',
             'Cổng nhận hình ảnh, âm thanh': item['Cổng nhận hình ảnh, âm thanh'] || '',
             'Cổng xuất âm thanh': item['Cổng xuất âm thanh'] || '',
-            'Hãng': item['Hãng'] || '',
             'Chất liệu chân đế': item['Chất liệu chân đế'] || '',
             'Chất liệu viền tivi': item['Chất liệu viền tivi'] || '',
+            'Hãng': item['Hãng'] || '',
             'Nơi sản xuất': item['Nơi sản xuất'] || '',
             'Năm ra mắt': item['Năm ra mắt'] || ''
         });
@@ -216,6 +226,7 @@ async function saveToExcel(tiviData) {
     await workbook.xlsx.writeFile(fileName);
     console.log(`The Excel file was written successfully as ${fileName}`);
 }
+
 
 async function crawlTiviData() {
     console.log('Fetching data...');
