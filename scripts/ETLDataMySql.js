@@ -98,6 +98,7 @@ function cleanNumber(value) {
 function transformData(data) {
     return data.map((item) => {
         const transformedItem = {
+            data_id: cleanString(item['data_id']), // Handle the new data_id field
             name: cleanString(item['name']),
             price: cleanPrice(item['price']),
             oldPrice: cleanPrice(item['oldPrice']),
@@ -116,6 +117,9 @@ function transformData(data) {
             usbPorts: cleanString(item['usbPorts']),
             videoAudioInputPorts: cleanString(item['videoAudioInputPorts']),
             audioOutputPorts: cleanString(item['audioOutputPorts']),
+            standMaterial: cleanString(item['Stand Material']), // Handle the new Stand Material field
+            bezelMaterial: cleanString(item['Bezel Material']), // Handle the new Bezel Material field
+            imageUrl: cleanString(item['imageUrl']), // Handle image URL
             manufacturer: cleanString(item['manufacturer']),
             manufacturedIn: cleanString(item['manufacturedIn']),
             releaseYear: cleanNumber(item['releaseYear'])
@@ -134,6 +138,7 @@ async function loadDataToDatabase(connection, data) {
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS ${tableName} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
+                data_id VARCHAR(255),  
                 name VARCHAR(255),
                 price BIGINT,
                 old_price BIGINT,
@@ -152,6 +157,9 @@ async function loadDataToDatabase(connection, data) {
                 usb_ports VARCHAR(255),
                 video_audio_input_ports VARCHAR(255),
                 audio_output_ports VARCHAR(255),
+                stand_material VARCHAR(255),
+                bezel_material VARCHAR(255),
+                image_url TEXT, -- New field for Image URL
                 manufacturer VARCHAR(255),
                 manufactured_in VARCHAR(255),
                 release_year INT
@@ -162,21 +170,22 @@ async function loadDataToDatabase(connection, data) {
 
         const insertQuery = `
             INSERT INTO ${tableName} (
-                name, price, old_price, discount_percent, product_link, screen_size, resolution, screen_type,
+                data_id, name, price, old_price, discount_percent, product_link, screen_size, resolution, screen_type,
                 operating_system, image_technology, processor, refresh_rate, speaker_power, internet_connection,
                 wireless_connectivity, usb_ports, video_audio_input_ports, audio_output_ports,
-                manufacturer, manufactured_in, release_year
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                stand_material, bezel_material, image_url, manufacturer, manufactured_in, release_year
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
 
         for (const item of data) {
             if (Object.values(item).some(value => value !== null)) {
                 await connection.query(insertQuery, [
-                    item.name, item.price, item.oldPrice, item.discountPercent, item.productLink, item.screenSize,
+                    item.data_id, item.name, item.price, item.oldPrice, item.discountPercent, item.productLink, item.screenSize,
                     item.resolution, item.screenType, item.operatingSystem, item.imageTechnology, item.processor,
                     item.refreshRate, item.speakerPower, item.internetConnection, item.wirelessConnectivity,
-                    item.usbPorts, item.videoAudioInputPorts, item.audioOutputPorts, item.manufacturer,
-                    item.manufacturedIn, item.releaseYear
+                    item.usbPorts, item.videoAudioInputPorts, item.audioOutputPorts, item.standMaterial, item.bezelMaterial,
+                    item.imageUrl, // New field for image URL
+                    item.manufacturer, item.manufacturedIn, item.releaseYear
                 ]);
             } else {
                 console.warn('Skipping item with all null values:', item);
