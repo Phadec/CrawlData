@@ -42,20 +42,30 @@ function cleanString(value) {
 function cleanNumber(value) {
     return value ? parseInt(value, 10) : null;
 }
+// Function to clean and validate image URLs
+function cleanImageUrl(url) {
+    if (typeof url === 'string') {
+        const trimmedUrl = url.trim();
+        // Check if the URL starts with http or https
+        if (/^https?:\/\//i.test(trimmedUrl)) {
+            return trimmedUrl;
+        }
+    }
+    return ''; // Return empty string if invalid
+}
 
 // Clean the data
 data = data.map((item) => {
     return {
-        dataId: cleanString(item['Data ID']), // Clean 'Data ID'
-        name: cleanString(item.Name),
-        price: cleanPrice(item.Price),
+        dataId: cleanString(item['Data ID']), // Clean Data ID
+        name: cleanString(item['Name']),
+        price: cleanPrice(item['Price']),
         oldPrice: cleanPrice(item['Old Price']),
         discountPercent: cleanDiscount(item['Discount Percent']),
-        productLink: cleanString(item['Product Link']),
+        imageUrl: cleanImageUrl(item['Image URL']), // Clean and validate image URL
         screenSize: cleanString(item['Screen Size']),
-        resolution: cleanString(item.Resolution),
+        resolution: cleanString(item['Resolution']),
         screenType: cleanString(item['Screen Type']),
-        tvType: cleanString(item['TV Type']),
         operatingSystem: cleanString(item['Operating System']),
         imageTechnology: cleanString(item['Image Technology']),
         processor: cleanString(item['Processor']),
@@ -66,11 +76,12 @@ data = data.map((item) => {
         usbPorts: cleanString(item['USB Ports']),
         videoAudioInputPorts: cleanString(item['Video/Audio Input Ports']),
         audioOutputPorts: cleanString(item['Audio Output Ports']),
-        standMaterial: cleanString(item['Stand Material']),
-        bezelMaterial: cleanString(item['Bezel Material']),
-        manufacturer: cleanString(item.Manufacturer),
+        standMaterial: cleanString(item['Stand Material']), // Clean Stand Material
+        bezelMaterial: cleanString(item['Bezel Material']), // Clean Bezel Material
+        manufacturer: cleanString(item['Manufacturer']),
         manufacturedIn: cleanString(item['Manufactured In']),
-        releaseYear: cleanNumber(item['Release Year'])
+        releaseYear: cleanNumber(item['Release Year']),
+        productLink: cleanString(item['Product Link']),
     };
 });
 

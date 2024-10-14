@@ -58,8 +58,9 @@ async function fetchTiviData() {
                 const oldPrice = product.querySelector('.price-old') ? product.querySelector('.price-old').textContent.trim() : '';
                 const discountPercent = product.querySelector('.percent') ? product.querySelector('.percent').textContent.trim() : '';
                 const link = product.querySelector('a') ? product.querySelector('a').href : '';
+                const imageUrl = product.querySelector('img') ? product.querySelector('img').getAttribute('data-src') || product.querySelector('img').src : ''; // Fetch image URL
 
-                data.push({ dataId, name, price, oldPrice, discountPercent, link });
+                data.push({ dataId, name, price, oldPrice, discountPercent, link, imageUrl });
             });
 
             return data;
@@ -67,7 +68,7 @@ async function fetchTiviData() {
 
         console.log(`Found ${tiviData.length} products. Fetching detailed information for each product...`);
 
-        // Limit the number of products to 10
+        // Giới hạn sản phẩm còn 10
         // tiviData = tiviData.slice(0, 10);
 
         // Loop through each product and fetch detailed information
@@ -90,7 +91,6 @@ async function fetchTiviData() {
         return [];
     }
 }
-
 
 // Function to fetch additional details from a product's page
 async function fetchProductDetails(browser, productLink) {
@@ -157,7 +157,6 @@ async function fetchProductDetails(browser, productLink) {
     }
 }
 
-
 // Save data to Excel
 async function saveToExcel(tiviData) {
     const workbook = new ExcelJS.Workbook();
@@ -170,7 +169,7 @@ async function saveToExcel(tiviData) {
         { header: 'Price', key: 'price', width: 15 },
         { header: 'Old Price', key: 'oldPrice', width: 15 },
         { header: 'Discount Percent', key: 'discountPercent', width: 20 },
-        { header: 'Product Link', key: 'link', width: 50 },
+        { header: 'Image URL', key: 'imageUrl', width: 50 }, // New column for Image URL
         { header: 'Screen Size', key: 'Kích cỡ màn hình', width: 20 },
         { header: 'Resolution', key: 'Độ phân giải', width: 20 },
         { header: 'Screen Type', key: 'Loại màn hình', width: 20 },
@@ -188,7 +187,8 @@ async function saveToExcel(tiviData) {
         { header: 'Bezel Material', key: 'Chất liệu viền tivi', width: 20 },
         { header: 'Manufacturer', key: 'Hãng', width: 20 },
         { header: 'Manufactured In', key: 'Nơi sản xuất', width: 20 },
-        { header: 'Release Year', key: 'Năm ra mắt', width: 20 }
+        { header: 'Release Year', key: 'Năm ra mắt', width: 20 },
+        { header: 'Product Link', key: 'link', width: 50 },
     ];
 
     console.log('Adding products to the Excel sheet...');
@@ -200,7 +200,7 @@ async function saveToExcel(tiviData) {
             price: item.price,
             oldPrice: item.oldPrice,
             discountPercent: item.discountPercent,
-            link: item.link,
+            imageUrl: item.imageUrl, // Add image URL
             'Kích cỡ màn hình': item['Kích cỡ màn hình'] || '',
             'Độ phân giải': item['Độ phân giải'] || '',
             'Loại màn hình': item['Loại màn hình'] || '',
@@ -218,7 +218,8 @@ async function saveToExcel(tiviData) {
             'Chất liệu viền tivi': item['Chất liệu viền tivi'] || '',
             'Hãng': item['Hãng'] || '',
             'Nơi sản xuất': item['Nơi sản xuất'] || '',
-            'Năm ra mắt': item['Năm ra mắt'] || ''
+            'Năm ra mắt': item['Năm ra mắt'] || '',
+            link: item.link,
         });
     });
 

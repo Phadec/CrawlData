@@ -43,6 +43,18 @@ function cleanNumber(value) {
     return value ? parseInt(value, 10) : null;
 }
 
+// Function to clean and validate image URLs
+function cleanImageUrl(url) {
+    if (typeof url === 'string') {
+        const trimmedUrl = url.trim();
+        // Check if the URL starts with http or https
+        if (/^https?:\/\//i.test(trimmedUrl)) {
+            return trimmedUrl;
+        }
+    }
+    return ''; // Return empty string if invalid
+}
+
 // Clean the data
 data = data.map((item) => {
     return {
@@ -51,7 +63,7 @@ data = data.map((item) => {
         price: cleanPrice(item['Price']),
         oldPrice: cleanPrice(item['Old Price']),
         discountPercent: cleanDiscount(item['Discount Percent']),
-        productLink: cleanString(item['Product Link']),
+        imageUrl: cleanImageUrl(item['Image URL']), // Clean and validate image URL
         screenSize: cleanString(item['Screen Size']),
         resolution: cleanString(item['Resolution']),
         screenType: cleanString(item['Screen Type']),
@@ -69,7 +81,8 @@ data = data.map((item) => {
         bezelMaterial: cleanString(item['Bezel Material']), // Clean Bezel Material
         manufacturer: cleanString(item['Manufacturer']),
         manufacturedIn: cleanString(item['Manufactured In']),
-        releaseYear: cleanNumber(item['Release Year'])
+        releaseYear: cleanNumber(item['Release Year']),
+        productLink: cleanString(item['Product Link']),
     };
 });
 

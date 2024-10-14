@@ -50,15 +50,15 @@ async function fetchTiviData() {
             const products = document.querySelectorAll('.product-info-container');
 
             products.forEach((product, index) => {
-                const dataId = product.getAttribute('data-id') ? product.getAttribute('data-id').trim() : 'No data_id'; // Extract data-id
                 const name = product.querySelector('.product__name h3') ? product.querySelector('.product__name h3').textContent.trim() : 'No name available';
                 const price = product.querySelector('.product__price--show') ? product.querySelector('.product__price--show').textContent.trim() : 'No price available';
                 const oldPrice = product.querySelector('.product__price--through') ? product.querySelector('.product__price--through').textContent.trim() : 'No old price';
                 const discountPercent = product.querySelector('.product__price--percent-detail') ? product.querySelector('.product__price--percent-detail').textContent.trim() : 'No discount';
                 const link = product.querySelector('.product__link') ? product.querySelector('.product__link').href : 'No link available';
+                const imageUrl = product.querySelector('.product__image img') ? product.querySelector('.product__image img').src : 'No image available';
 
                 console.log(`Extracted product ${index + 1}: ${name}`);
-                data.push({ dataId, name, price, oldPrice, discountPercent, link });
+                data.push({ name, price, oldPrice, discountPercent, link, imageUrl });
             });
 
             return data;
@@ -91,6 +91,7 @@ async function fetchTiviData() {
 }
 
 // Function to fetch additional details from a product's page
+
 async function fetchProductDetails(browser, productLink) {
     if (!productLink) return {};
 
@@ -103,13 +104,13 @@ async function fetchProductDetails(browser, productLink) {
         await autoScroll(page);
         console.log('Finished scrolling down to load all product details.');
 
-        // Wait for the modal content to be fully loaded
-        const modalContentSelector = '.technical-content-modal-item';
-        await page.waitForSelector(modalContentSelector, { timeout: 10000 });
-
-        // Extract technical details from the product page
+        // Extract productId and technical details from the product page
         const details = await page.evaluate(() => {
+            // Extract productId from the page (assuming it's within an element like #block-comment-cps)
+            const productId = document.querySelector('#block-comment-cps')?.getAttribute('product-id') || 'No product-id';
+
             const technicalDetails = {
+                'productId': productId, // Include productId here
                 'Screen Size': '',
                 'Resolution': '',
                 'Screen Type': '',
@@ -260,17 +261,17 @@ async function saveTiviData() {
 
         // Set column headers
         worksheet.columns = [
-            { header: 'Data ID', key: 'dataId', width: 15 }, // New column for dataId
+            { header: 'Data ID', key: 'dataId', width: 15 }, // New column for productId from productDetail page
             { header: 'Name', key: 'name', width: 50 },
             { header: 'Price', key: 'price', width: 15 },
             { header: 'Old Price', key: 'oldPrice', width: 15 },
             { header: 'Discount Percent', key: 'discountPercent', width: 20 },
+            { header: 'Image URL', key: 'imageUrl', width: 50 }, // New column for product image URL
             { header: 'Screen Size', key: 'Screen Size', width: 20 },
             { header: 'Resolution', key: 'Resolution', width: 20 },
             { header: 'Screen Type', key: 'Screen Type', width: 20 },
             { header: 'TV Type', key: 'TV Type', width: 20 },
             { header: 'Operating System', key: 'Operating System', width: 20 },
-            { header: 'Product Link', key: 'link', width: 50 },
             { header: 'Image Technology', key: 'Image Technology', width: 30 },
             { header: 'Processor', key: 'Processor', width: 20 },
             { header: 'Refresh Rate', key: 'Refresh Rate', width: 15 },
@@ -285,12 +286,40 @@ async function saveTiviData() {
             { header: 'Manufacturer', key: 'Manufacturer', width: 20 },
             { header: 'Manufactured In', key: 'Manufactured In', width: 20 },
             { header: 'Release Year', key: 'Release Year', width: 20 },
+            { header: 'Product Link', key: 'link', width: 50 },
         ];
 
         // Add data to worksheet
         tiviData.forEach((item, index) => {
             console.log(`Adding product ${index + 1} to the Excel sheet: ${item.name}`);
-            worksheet.addRow(item);
+            worksheet.addRow({
+                dataId: item.productId, // productId from detail page
+                name: item.name,
+                price: item.price,
+                oldPrice: item.oldPrice,
+                discountPercent: item.discountPercent,
+                imageUrl: item.imageUrl, // Include the product image URL
+                'Screen Size': item['Screen Size'],
+                Resolution: item.Resolution,
+                'Screen Type': item['Screen Type'],
+                'TV Type': item['TV Type'],
+                'Operating System': item['Operating System'],
+                'Image Technology': item['Image Technology'],
+                Processor: item.Processor,
+                'Refresh Rate': item['Refresh Rate'],
+                'Speaker Power': item['Speaker Power'],
+                'Internet Connection': item['Internet Connection'],
+                'Wireless Connectivity': item['Wireless Connectivity'],
+                'USB Ports': item['USB Ports'],
+                'Video/Audio Input Ports': item['Video/Audio Input Ports'],
+                'Audio Output Ports': item['Audio Output Ports'],
+                'Stand Material': item['Stand Material'],
+                'Bezel Material': item['Bezel Material'],
+                Manufacturer: item.Manufacturer,
+                'Manufactured In': item['Manufactured In'],
+                'Release Year': item['Release Year'],
+                link: item.link,
+            });
         });
 
         // Write to Excel file
@@ -301,6 +330,7 @@ async function saveTiviData() {
         console.log('No data found to write.');
     }
 }
+
 
 // Start the main product fetching process
 saveTiviData();
