@@ -261,31 +261,31 @@ async function saveTiviData() {
 
         // Set column headers
         worksheet.columns = [
-            { header: 'Data ID', key: 'dataId', width: 15 }, // New column for productId from productDetail page
+            { header: 'Data ID', key: 'dataId', width: 15 }, // New column for productId from detail page
             { header: 'Name', key: 'name', width: 50 },
             { header: 'Price', key: 'price', width: 15 },
             { header: 'Old Price', key: 'oldPrice', width: 15 },
             { header: 'Discount Percent', key: 'discountPercent', width: 20 },
             { header: 'Image URL', key: 'imageUrl', width: 50 }, // New column for product image URL
-            { header: 'Screen Size', key: 'Screen Size', width: 20 },
-            { header: 'Resolution', key: 'Resolution', width: 20 },
-            { header: 'Screen Type', key: 'Screen Type', width: 20 },
-            { header: 'TV Type', key: 'TV Type', width: 20 },
-            { header: 'Operating System', key: 'Operating System', width: 20 },
+            { header: 'Screen Size', key: 'Screen Size', width: 25 },
+            { header: 'Resolution', key: 'Resolution', width: 25 },
+            { header: 'Screen Type', key: 'Screen Type', width: 25 },
+            { header: 'TV Type', key: 'TV Type', width: 25 },
+            { header: 'Operating System', key: 'Operating System', width: 25 },
             { header: 'Image Technology', key: 'Image Technology', width: 30 },
-            { header: 'Processor', key: 'Processor', width: 20 },
-            { header: 'Refresh Rate', key: 'Refresh Rate', width: 15 },
-            { header: 'Speaker Power', key: 'Speaker Power', width: 20 },
-            { header: 'Internet Connection', key: 'Internet Connection', width: 20 },
-            { header: 'Wireless Connectivity', key: 'Wireless Connectivity', width: 20 },
-            { header: 'USB Ports', key: 'USB Ports', width: 20 },
+            { header: 'Processor', key: 'Processor', width: 25 },
+            { header: 'Refresh Rate', key: 'Refresh Rate', width: 25 },
+            { header: 'Speaker Power', key: 'Speaker Power', width: 25 },
+            { header: 'Internet Connection', key: 'Internet Connection', width: 25 },
+            { header: 'Wireless Connectivity', key: 'Wireless Connectivity', width: 25 },
+            { header: 'USB Ports', key: 'USB Ports', width: 25 },
             { header: 'Video/Audio Input Ports', key: 'Video/Audio Input Ports', width: 30 },
             { header: 'Audio Output Ports', key: 'Audio Output Ports', width: 30 },
-            { header: 'Stand Material', key: 'Stand Material', width: 20 }, // New column for Stand Material
-            { header: 'Bezel Material', key: 'Bezel Material', width: 20 }, // New column for Bezel Material
-            { header: 'Manufacturer', key: 'Manufacturer', width: 20 },
-            { header: 'Manufactured In', key: 'Manufactured In', width: 20 },
-            { header: 'Release Year', key: 'Release Year', width: 20 },
+            { header: 'Stand Material', key: 'Stand Material', width: 25 }, // New column for Stand Material
+            { header: 'Bezel Material', key: 'Bezel Material', width: 25 }, // New column for Bezel Material
+            { header: 'Manufacturer', key: 'Manufacturer', width: 25 },
+            { header: 'Manufactured In', key: 'Manufactured In', width: 25 },
+            { header: 'Release Year', key: 'Release Year', width: 25 },
             { header: 'Product Link', key: 'link', width: 50 },
         ];
 

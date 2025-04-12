@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="DESKTOP-LM393J1.TiviStagingDB"
+  DTS:DTSID="{7B5A9555-E6A2-414F-8916-336B4D03ED5B}"
+  DTS:CreationName="OLEDB">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectRetryCount="1"
+      DTS:ConnectRetryInterval="5"
+      DTS:ConnectionString="Data Source=DESKTOP-LM393J1;Initial Catalog=TiviStagingDB;Provider=SQLNCLI11.1;Integrated Security=SSPI;Application Name=SSIS-TiviDataWarehouseETL-{7B5A9555-E6A2-414F-8916-336B4D03ED5B}DESKTOP-LM393J1.TiviStagingDB;Auto Translate=False;" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

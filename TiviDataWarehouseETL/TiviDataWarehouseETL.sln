@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{C9674DCB-5085-4A16-B785-4C70DD1589BD}") = "TiviDataWarehouseETL", "TiviDataWarehouseETL\TiviDataWarehouseETL.dtproj", "{2262A550-48CA-4F99-9B19-6AE81AF14EAF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Development|Default = Development|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2262A550-48CA-4F99-9B19-6AE81AF14EAF}.Development|Default.ActiveCfg = Development
+		{2262A550-48CA-4F99-9B19-6AE81AF14EAF}.Development|Default.Build.0 = Development
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B7CD98CB-E188-4361-9E11-B31C92DB8438}
+	EndGlobalSection
+EndGlobal
